@@ -2,8 +2,8 @@
 Blockchain Voting System
 
 How to run the codes and test with Ganache blockchain:
-1. Clone the repository. This can be done by writing "git clone https://github.com/sovayle/KhaiNeefZimTruffle" in the terminal
-2. cd into the truffleworking in terminal.
+1. Clone the repository. This can be done by writing 'git clone https://github.com/sovayle/KhaiNeefZimTruffle' in your terminal
+2. cd into the 'truffleworking' in your terminal.
 3. run command 'truffle compile'.
 4. run command 'truffle migrate --reset'.
 5. After run 'tuffle migrate --reset' make sure "contract address" in index.html are same with contract address in gananche - open gananche -> contract -> election -> copy contract address, paste in index.html.
