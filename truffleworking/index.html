@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Election DApp</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <!-- <script src="js/web3.min.js"></script> -->
+  </head>
+<body>
+    <nav class="container-fluid">
+      <ul>
+        <li><strong>Election DApp</strong></li>
+      </ul>
+      <ul>
+        <li><a href="#voter">Voter</a></li>
+        <li><a href="#candidate">Candidate</a></li>
+        <li><a href="#admin">Admin</a></li>
+      </ul>
+    </nav>
+    
+    <main class="container">
+      <div class="grid">
+          <section>
+              <hgroup>
+                <h2>Welcome to Election DApp</h2>
+                <h3>Your Decentralized Voting Platform</h3>
+              </hgroup>
+              <p>Participate in a transparent and secure voting process powered by blockchain technology.</p>
+              </div>
+              <figure>
+                <img src="https://source.unsplash.com/featured/?ethereum" alt="Ethereum photos" style="width: 75%;">
+                <!-- <figcaption><a href="https://unsplash.com/s/photos/ethereum" target="_blank">Image Source</a></figcaption>
+                -->
+              </figure>
+              
+              <h2>How the voting system works</h2>
+              <ol>
+                <li>The admin will register all the voters.</li>
+                <li>Candidates will pay the fee to register.</li>
+                <li>The admin will register candidates after the candidates have payed the required fee.</li>
+                <li>Once all voters and candidates are recognised, admin will start the election.</li>
+                <li>Voters are able to vote for their desired candidates.</li>
+                <li>After a certain period, admin will end the election.</li>
+                <li>Winner of the election is now able to be announced.</li>
+              </ol>
+
+              <!-- Voter Section -->
+              <h2 id="voter">Voter Instructions</h2>
+              <p>As a registered voter, you can participate in the election by casting your vote for a candidate. Simply enter the candidate's address and submit your vote.</p>
+              <label for="candidateAddress">Candidate Address:</label>
+              <input type="text" id="candidateAddress" placeholder="Enter candidate address">
+              <button onclick="vote()">Vote</button>
+
+              <!-- Candidate Section -->
+              <h2 id="candidate">Candidate Instructions</h2>
+              <p>If you wish to run as a candidate, you must register by paying the required fee. Once registered, your name will appear on the voter's ballot.</p>
+              <button onclick="payFee()">Pay Registration Fee</button>
+              
+              <!-- Election Control Section -->
+              <h2 id ="admin">Admin Controls</h2>
+              <p>As an admin, you have the control to manage the election process, including registering voters and candidates, starting and ending the vote, and announcing the winner.</p>
+              
+              <!-- Voter Registration Section -->
+              <h3>Register Voter</h3>
+              <label for="voterAddress">Voter Address:</label>
+              <input type="text" id="voterAddress" placeholder="Enter voter address">
+              <button onclick="registerVoter()">Register Voter</button>
+
+              <!-- Candidate Registration Section -->
+              <h3>Add Candidate</h3>
+              <label for="candidateAddress1">Candidate Address:</label>
+              <input type="text" id="candidateAddress1" placeholder="Enter candidate address">
+              <label for="candidateName">Candidate Name:</label>
+              <input type="text" id="candidateName" placeholder="Enter candidate name">
+              <button onclick="addCandidate()">Add Candidate</button>
+
+              <!-- Election Control Section -->
+              <h3>Election Controls</h3>
+              <button onclick="startVote()">Start Election</button>
+              <button onclick="endVote()">End Election</button>
+              <button onclick="withdrawFunds()">Withdraw Funds</button>
+
+              <!-- Election Results Section -->
+              <h3>Announce Results</h3>
+              <button onclick="announceWinner()">Announce Winner</button>
+          </section>
+      </div>
+    </main>
+
+    <script>
+        const abi = [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "candidateAddresses",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "candidates",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "bool",
+          "name": "registered",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "voteCount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "votable",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "state",
+      "outputs": [
+        {
+          "internalType": "enum Election.State",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "totalVotes",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "voters",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "voted",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "registered",
+          "type": "bool"
+        },
+        {
+          "internalType": "address",
+          "name": "vote",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "payFee",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function",
+      "payable": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_voterAddress",
+          "type": "address"
+        }
+      ],
+      "name": "registerVoter",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_canAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "_name",
+          "type": "string"
+        }
+      ],
+      "name": "addCandidate",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "startVote",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_canAddress",
+          "type": "address"
+        }
+      ],
+      "name": "vote",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "endVote",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "announceWinner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "getTotalCandidates",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "balanceOf",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "withdrawRegistrationFunds",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function",
+      "payable": true
+    },
+    {
+      "inputs": [],
+      "name": "getOwnerBalance",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    }
+  ]; // Replace with your actual contract ABI
+        let web3;
+        let account; // Declare account globally
+        let electionContract; // Declare electionContract globally
+
+        // Initialize web3 and set up contract instance
+        init();
+
+        document.getElementById('startVoteButton').addEventListener('click', startVote);
+        document.getElementById('endVoteButton').addEventListener('click', endVote);
+        document.getElementById('withdrawFundsButton').addEventListener('click', withdrawFunds);
+        document.getElementById('registerVoterButton').addEventListener('click', registerVoter);
+        document.getElementById('voteButton').addEventListener('click', vote);
+        document.getElementById('payFeeButton').addEventListener('click', payFee);
+        document.getElementById('addCandidateButton').addEventListener('click', addCandidate);
+        document.getElementById('announceWinnerButton').addEventListener('click', announceWinner);
+
+        async function startVote() {
+        await init();  // Ensure that web3 and account are properly initialized
+        console.log('startVote function called');
+
+        try {
+            // Call the startVote function on the smart contract
+            const result = await electionContract.methods.startVote().send({ from: account });
+
+            // Log the result (optional)
+            console.log('Transaction Result:', result);
+
+            // Display a success message (optional)
+            alert('Vote started successfully!');
+        } catch (error) {
+            // Handle errors
+            console.error('Error starting vote:', error.message || error);
+            alert('Error starting vote. Please check the console for details.');
+        }
+    }
+    async function endVote() {
+            await init();  // Ensure that web3 and account are properly initialized
+            console.log('endVote function called');
+
+            try {
+                // Call the endVote function on the smart contract
+                const result = await electionContract.methods.endVote().send({ from: account });
+
+                // Log the result (optional)
+                console.log('Transaction Result:', result);
+
+                // Display a success message (optional)
+                alert('Vote ended successfully!');
+            } catch (error) {
+                // Handle errors
+                console.error('Error ending vote:', error.message || error);
+                alert('Error ending vote. Please check the console for details.');
+            }
+        }
+        async function announceWinner() {
+            await init();
+
+            try {
+                const result = await electionContract.methods.announceWinner().call();
+
+                console.log('Winner Address:', result);
+                alert('Winner Address:' + result);
+                alert('Winner announced successfully!');
+            } catch (error) {
+                console.error('Error announcing winner:', error.message || error);
+                alert('Error announcing winner. Please check the console for details.');
+            }
+        }
+        async function payFee() {
+            await init();
+
+            try {
+                const result = await electionContract.methods.payFee().send({ from: account, value: web3.utils.toWei('100', 'wei') });
+
+                console.log('Transaction Result:', result);
+
+                alert('Fee paid successfully!');
+            } catch (error) {
+                console.error('Error paying fee:', error.message || error);
+                alert('Error paying fee. Please check the console for details.');
+            }
+        }
+      async function withdrawFunds() {
+            await init();
+
+            try {
+                const result = await electionContract.methods.withdrawRegistrationFunds().send({ from: account });
+
+                console.log('Transaction Result:', result);
+
+                alert('Funds withdrawn successfully!');
+            } catch (error) {
+                console.error('Error withdrawing funds:', error.message || error);
+                alert('Error withdrawing funds. Please check the console for details.');
+            }
+        }
+        async function registerVoter() {
+            await init();
+
+            try {
+                const voterAddress = document.getElementById('voterAddress').value;
+                const result = await electionContract.methods.registerVoter(voterAddress).send({ from: account });
+
+                console.log('Transaction Result:', result);
+
+                alert('Voter registered successfully!');
+            } catch (error) {
+                console.error('Error registering voter:', error.message || error);
+                alert('Error registering voter. Please check the console for details.');
+            }
+        }
+        async function vote() {
+            await init();
+
+            try {
+                const candidateAddress = document.getElementById('candidateAddress').value;
+                const result = await electionContract.methods.vote(candidateAddress).send({ from: account });
+
+                console.log('Transaction Result:', result);
+
+                alert('Vote submitted successfully!');
+            } catch (error) {
+                console.error('Error voting:', error.message || error);
+                alert('Error voting. Please check the console for details.');
+            }
+        }
+        async function addCandidate() {
+            await init();
+
+            try {
+                const candidateAddress1 = document.getElementById('candidateAddress1').value;
+                const candidateName = document.getElementById('candidateName').value;
+
+                const result = await electionContract.methods.addCandidate(candidateAddress1, candidateName).send({ from: account });
+
+                console.log('Transaction Result:', result);
+
+                alert('Candidate added successfully!');
+            } catch (error) {
+                console.error('Error adding candidate:', error.message || error);
+                alert('Error adding candidate. Please check the console for details.');
+            }
+        }
+    async function registerVoter() {
+            await init();
+
+            try {
+                const voterAddress = document.getElementById('voterAddress').value;
+                const result = await electionContract.methods.registerVoter(voterAddress).send({ from: account });
+
+                console.log('Transaction Result:', result);
+
+                alert('Voter registered successfully!');
+            } catch (error) {
+                console.error('Error registering voter:', error.message || error);
+                alert('Error registering voter. Please check the console for details.');
+            }
+        }
+        async function vote() {
+            await init();
+
+            try {
+                const candidateAddress = document.getElementById('candidateAddress').value;
+                const result = await electionContract.methods.vote(candidateAddress).send({ from: account });
+
+                console.log('Transaction Result:', result);
+
+                alert('Vote submitted successfully!');
+            } catch (error) {
+                console.error('Error voting:', error.message || error);
+                alert('Error voting. Please check the console for details.');
+            }
+        }
+
+    async function init() {
+        if (window.ethereum) {
+            web3 = new Web3(window.ethereum);
+            try {
+                await window.ethereum.enable();
+                await web3.eth.net.switchTo('goerli');
+                console.log('Connected to MetaMask');
+            } catch (error) {
+                console.error('User denied account access');
+            }
+        } else if (window.web3) {
+            web3 = new Web3(web3.currentProvider);
+        } else {
+            console.error('MetaMask not detected! Please install MetaMask to use this DApp.');
+        }
+
+        const accounts = await web3.eth.getAccounts();
+        account = accounts[0];
+
+        console.log('Connected Account:', account);
+
+        // Initialize electionContract
+        const contractAddress = '0x03C3a44caB7C51d6A4bB550e2877848CC265E747'; // Replace with your actual contract address
+        electionContract = new web3.eth.Contract(abi, contractAddress);
+    }
+    </script>
+
+    <footer class="container">
+      <small>
+          <a href="#">Privacy Policy</a> • <a href="#">Terms of Use</a>
+      </small>
+    </footer>
+</body>
+</html>
